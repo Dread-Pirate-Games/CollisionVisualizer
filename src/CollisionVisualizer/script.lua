@@ -80,9 +80,8 @@ function visualUpdate()
 				if TransparencyButtonValue == true then
 					adorn.Adornee = part
 					adorn.SurfaceColor3 = transparencySelectionColor
-					adorn.SurfaceTransparency = 0
+					adorn.SurfaceTransparency = 0.5
 					adorn.Color3 = transparencySelectionColor
-				else
 				end
 				
 			end
