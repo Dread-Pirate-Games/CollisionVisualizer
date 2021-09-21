@@ -17,21 +17,24 @@ local pluginActive = false
 local toolbar = plugin:CreateToolbar("Collision Visualizer")
 local toolbarButton = toolbar:CreateButton("Show", "Collision Visualizer ", "rbxassetid://7525267454")
 local gui = script:WaitForChild("CollisionVisualizerGui")
-gui.Parent = CoreGui
+
 
 
 local canCollideButton = gui.Frame.CanCollideButton
 local canQueryButton = gui.Frame.CanQueryButton
 local canTouchButton = gui.Frame.CanTouchButton
+local transparencyButton = gui.Frame.TransparencyButton
 
 local CanCollideButtonValue = false
 local CanQueryButtonValue = false
 local CanTouchButtonValue = false
+local TransparencyButtonValue = false
 
 -- Set selector colors for the different attributes. 
 local canCollideSelectionColor = Color3.fromRGB(255, 136, 51)
 local canQuerySelectionColor = Color3.fromRGB(12, 125, 16)
 local canTouchSelectionColor = Color3.fromRGB(151, 24, 255)
+local transparencySelectionColor = Color3.fromRGB(255, 126, 253)
 
 
 local visualBin = Instance.new("Folder")
@@ -51,7 +54,6 @@ function resetSelectionBoxes()
 		local s = Instance.new("SelectionBox")
 		s.Name = i
 		s.LineThickness = 0.04
-		s.Color3 = Color3.new()
 		s.Parent = visualBin
 		visualBin.Parent = CoreGui
 	end
@@ -70,8 +72,21 @@ function visualUpdate()
 	for i = 1,1000 do
 		local part = parts[i]
 		if part then
-			local adorn = visualBin[i]		
-			adorn.Color3 = Color3.new()
+			local adorn = visualBin[i]
+			adorn.SurfaceTransparency = 1
+			adorn.Adornee = nil
+			
+			if part.Transparency == 1 then  
+				if TransparencyButtonValue == true then
+					adorn.Adornee = part
+					adorn.SurfaceColor3 = transparencySelectionColor
+					adorn.SurfaceTransparency = 0
+					adorn.Color3 = transparencySelectionColor
+				else
+				end
+				
+			end
+			
 			if part.CanCollide == true and CanCollideButtonValue == true then
 				adorn.Adornee = part
 				adorn.Color3 = canCollideSelectionColor
@@ -83,9 +98,6 @@ function visualUpdate()
 			elseif part.CanTouch == true  and CanTouchButtonValue == true then
 				adorn.Adornee = part
 				adorn.Color3 = canTouchSelectionColor
-				
-			else
-				adorn.Adornee = nil
 			end
 		end
 	end
@@ -97,12 +109,10 @@ function SetButton(button, newState)
 		-- set to true (on)
 		button.Text = "ON"
 		button.BackgroundColor3 = Color3.new(0, 170, 0)
-		--button:SetAttribute("ButtonOn", true)		
 	else
 		-- set to false (off)
 		button.Text = "OFF"
 		button.BackgroundColor3 = Color3.new(0.392157, 0.392157, 0.392157)
-		--button:SetAttribute("ButtonOn", false)
 	end	
 end
 
@@ -152,12 +162,18 @@ function SetCanTouchButton()
 end
 
 
+function SetTransparencyButton()
+	TransparencyButtonValue = not TransparencyButtonValue
+	SetButton(transparencyButton, TransparencyButtonValue)
 
+	visualUpdate()
+end
 
 
 local function clickToolbarButton()
 	pluginActive = not pluginActive
 	toolbarButton:SetActive(pluginActive)
+	gui.Parent = CoreGui
 	gui.Enabled = pluginActive
 	if pluginActive == false then
 		visualBin.Parent = nil
@@ -172,4 +188,5 @@ toolbarButton.Click:Connect(clickToolbarButton)
 canCollideButton.Activated:Connect(SetCanCollideButton)
 canQueryButton.Activated:Connect(SetCanQueryButton)
 canTouchButton.Activated:Connect(SetCanTouchButton)
+transparencyButton.Activated:Connect(SetTransparencyButton)
 -------------------------------------------------------------------------------------------------------------------------------------------
