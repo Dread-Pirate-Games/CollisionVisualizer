@@ -16,6 +16,7 @@ There are three choices:
 * CanCollide - Highlights all parts with CanCollide = true
 * CanQuery - Highlights all parts where CanQuery = true AND CanCollide = false (Helpful for finding those parts where you’ve already turned off collision and want to take advantage of the new CanQuery functionality)
 * CanTouch - Highlights all the parts with CanTouch = true
+
 Here are examples of the three settings in a room within my game:
 ![image](https://user-images.githubusercontent.com/82744105/134177673-be89e219-e68d-4450-91ea-1a565feae9a7.png)
 
