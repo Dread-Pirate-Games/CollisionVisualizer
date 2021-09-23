@@ -24,11 +24,17 @@ local canCollideButton = gui.Frame.CanCollideButton
 local canQueryButton = gui.Frame.CanQueryButton
 local canTouchButton = gui.Frame.CanTouchButton
 local transparencyButton = gui.Frame.TransparencyButton
+local maxDistanceTextBox = gui.Frame.MaxDistanceTextBox
+local maxPartsTextBox = gui.Frame.MaxPartsTextBox
+local refreshButton = gui.Frame.RefreshButton
+local maxPartsReachedText = gui.Frame.MaxPartsReachedTextLabel
 
 local CanCollideButtonValue = false
 local CanQueryButtonValue = false
 local CanTouchButtonValue = false
 local TransparencyButtonValue = false
+local MaxPartsValue = tonumber(maxDistanceTextBox.Text)
+local MaxDistanceValue = tonumber(maxPartsTextBox.Text)
 
 -- Set selector colors for the different attributes. 
 local canCollideSelectionColor = Color3.fromRGB(255, 136, 51)
@@ -50,7 +56,7 @@ function resetSelectionBoxes()
 		end
 	end
 	
-	for i = 1,1000 do
+	for i = 1,MaxPartsValue do
 		local s = Instance.new("SelectionBox")
 		s.Name = i
 		s.LineThickness = 0.04
@@ -62,14 +68,41 @@ end
 
 
 function visualUpdate()
+	
+	if maxPartsTextBox.Text ~= nil then
+		if tonumber(maxPartsTextBox.Text) ~= MaxPartsValue then
+			MaxPartsValue = tonumber(maxPartsTextBox.Text)
+			resetSelectionBoxes()
+		end
+		
+	else
+		maxPartsTextBox.Text = MaxPartsValue
+	end
+	
+	if maxDistanceTextBox.Text ~= nil then
+		if tonumber(maxDistanceTextBox.Text) ~= MaxDistanceValue then
+			MaxDistanceValue = tonumber(maxDistanceTextBox.Text)
+		end
+
+	else
+		maxDistanceTextBox.Text = MaxDistanceValue
+	end
+	
 	local c = workspace.CurrentCamera
 
 	local pos = c.Focus.Position
-	local corner1 = pos - Vector3.new(64,64,64)
-	local corner2 = pos + Vector3.new(64,64,64)
+	local corner1 = pos - Vector3.new(MaxDistanceValue,MaxDistanceValue,MaxDistanceValue)
+	local corner2 = pos + Vector3.new(MaxDistanceValue,MaxDistanceValue,MaxDistanceValue)
 	local region = Region3.new(corner1,corner2)
-	local parts = workspace:FindPartsInRegion3(region,nil,1000)
-	for i = 1,1000 do
+	local parts = workspace:FindPartsInRegion3(region,nil,MaxPartsValue + 1)
+	
+	if(#parts == MaxPartsValue + 1) then
+		maxPartsReachedText.Visible = true
+	else
+		maxPartsReachedText.Visible = false
+	end
+	
+	for i = 1,MaxPartsValue do
 		local part = parts[i]
 		if part then
 			local adorn = visualBin[i]
@@ -80,8 +113,9 @@ function visualUpdate()
 				if TransparencyButtonValue == true then
 					adorn.Adornee = part
 					adorn.SurfaceColor3 = transparencySelectionColor
-					adorn.SurfaceTransparency = 0.5
+					adorn.SurfaceTransparency = .5
 					adorn.Color3 = transparencySelectionColor
+				else
 				end
 				
 			end
@@ -168,18 +202,20 @@ function SetTransparencyButton()
 	visualUpdate()
 end
 
+function ClickRefreshButton()
+	visualUpdate()
+end
 
 local function clickToolbarButton()
 	pluginActive = not pluginActive
 	toolbarButton:SetActive(pluginActive)
-	gui.Parent = CoreGui
 	gui.Enabled = pluginActive
 	if pluginActive == false then
 		visualBin.Parent = nil
-		
+		gui.Parent = script
 	else
-		resetSelectionBoxes()
-		
+		gui.Parent = CoreGui
+		resetSelectionBoxes()		
 	end
 end
 
@@ -188,4 +224,4 @@ canCollideButton.Activated:Connect(SetCanCollideButton)
 canQueryButton.Activated:Connect(SetCanQueryButton)
 canTouchButton.Activated:Connect(SetCanTouchButton)
 transparencyButton.Activated:Connect(SetTransparencyButton)
--------------------------------------------------------------------------------------------------------------------------------------------
+refreshButton.Activated:Connect(ClickRefreshButton)
